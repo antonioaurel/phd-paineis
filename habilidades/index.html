@@ -1,0 +1,996 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habilidades nas Entrevistas — Dashboard</title>
+<style>/*<<respostas*/
+.rp-modos{display:flex;gap:6px;margin:12px 0 2px}
+.rp-modo{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--bd,#e7e1d6);
+  background:#fff;border-radius:8px;padding:7px 14px;color:#41392e;font-weight:600}
+.rp-modo.on{background:#232019;border-color:#232019;color:#fff}
+.rp-tab td.p{width:15%;font-size:12px;font-weight:600;color:#232019}
+.rp-tab td.p .i{display:block;font-weight:400;color:#6b6255;font-size:11px}
+.rp-profs{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 6px}
+.rp-prof{font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--bd,#e7e1d6);
+  background:#fff;border-radius:20px;padding:5px 13px;color:#41392e}
+.rp-prof:hover{border-color:#bdb4a4}
+.rp-prof.on{background:#232019;border-color:#232019;color:#fff;font-weight:600}
+.rp-filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
+.rp-filtros input,.rp-filtros select{font:inherit;font-size:13px;padding:7px 10px;
+  border:1px solid var(--bd,#e7e1d6);border-radius:8px;background:#fff;color:#232019}
+.rp-filtros input{min-width:250px}
+.rp-filtros .cnt{font-size:12px;color:#6b6255}
+.rp-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:18px 0 2px}
+.rp-cab h3{margin:0;font-size:18px}
+.rp-cab .inst{font-size:13.5px;color:#6b6255}
+.rp-cab .n{font-size:12px;color:#6b6255;margin-left:auto}
+.rp-tab{width:100%;border-collapse:collapse;margin-top:6px}
+.rp-tab th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
+  color:#6b6255;border-bottom:2px solid var(--bd,#e7e1d6);padding:7px 10px 7px 0;font-weight:700}
+.rp-tab td{border-bottom:1px solid #ece7dd;padding:9px 10px 9px 0;vertical-align:top}
+.rp-tab td.c{width:16%;font-size:11.5px;color:#6b6255}
+.rp-tab td.q{width:28%;font-size:12.5px;font-weight:600;color:#41392e}
+.rp-tab td.a{font-size:13.5px;line-height:1.6;white-space:pre-wrap}
+.rp-tab td.a .v+.v{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed #ece7dd}
+.rp-tab tr.vazia td.a{color:#b8ad9c}
+/* --- matriz de comparacao (09/08/2026) --- */
+/* Rolagem propria, para a pagina nunca rolar na horizontal. Com 27 professores
+   a tabela passa de qualquer tela; o que nao pode e' arrastar o painel inteiro. */
+.rp-rolagem{overflow-x:auto;border:1px solid #ece7dd;border-radius:10px;margin-top:6px}
+.rp-matriz{min-width:100%;width:max-content}
+/* Categoria e pergunta ficam presas: rolando para o vigesimo professor, ainda
+   da' para saber de que pergunta e' a linha. Sem isso a matriz e' ilegivel. */
+/* Largura FIXA, nao min-width. Com min-width a coluna cresce com o texto: a
+   categoria "IA e Qualidade e a validacao da Qualidade das Respostas" nao quebra
+   linha, empurrou a coluna A para ~700px e jogou todos os professores para fora
+   da tela. E o `left` da coluna B so' funciona se a largura de A for previsivel,
+   senao B monta em cima de A. `overflow-wrap` deixa quebrar dentro da palavra
+   quando nao ha' espaco. */
+.rp-matriz td.c,.rp-matriz th.c{position:sticky;left:0;z-index:2;background:#faf8f4;
+  width:150px;min-width:150px;max-width:150px;white-space:normal;overflow-wrap:anywhere}
+.rp-matriz td.q,.rp-matriz th.q{position:sticky;left:150px;z-index:2;background:#faf8f4;
+  width:260px;min-width:260px;max-width:260px;white-space:normal;overflow-wrap:anywhere;
+  border-right:2px solid #e7e1d6}
+.rp-matriz td.c .rp-cat{white-space:normal;display:inline-block;line-height:1.35}
+.rp-matriz thead th{position:sticky;top:0;z-index:3;background:#faf8f4}
+.rp-matriz thead th.c,.rp-matriz thead th.q{z-index:4}
+.rp-matriz th.m{width:300px;min-width:300px;max-width:300px;font-size:11px;vertical-align:bottom}
+.rp-matriz th.m .i{display:block;font-weight:400;color:#6b6255;text-transform:none;
+  letter-spacing:0;font-size:10.5px}
+/* Teto de largura na coluna de resposta. Sem `max-width` a celula estica ate' o
+   tamanho da resposta mais longa, e um unico professor ocupava a tela inteira —
+   o que anula a matriz, que existe para pos duas ou tres respostas lado a lado.
+   `pre-wrap` preserva a quebra de linha da planilha; `overflow-wrap` impede que
+   uma URL ou palavra longa volte a esticar a coluna. */
+.rp-matriz td.m{width:300px;min-width:300px;max-width:300px;font-size:13px;line-height:1.55;
+  white-space:pre-wrap;overflow-wrap:anywhere;border-left:1px solid #f2ede4;padding-left:10px}
+.rp-matriz td.m .v+.v{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed #ece7dd}
+/* Os dois vazios sao diferentes e precisam parecer diferentes. `.` e' resposta
+   em branco numa pergunta que existe; `-` e' pergunta que nem aparece na aba. */
+.rp-matriz td.branca{color:#b8ad9c;text-align:center}
+.rp-matriz td.falta{color:#d9d2c4;text-align:center;background:#fbfaf7}
+.rp-matriz th.c select{display:block;margin-top:5px;font:inherit;font-size:11.5px;
+  padding:4px 6px;border:1px solid #ddd5c8;border-radius:7px;background:#fff;max-width:150px}
+.rp-matriz th.c div{font-size:11px}
+.rp-cat{display:inline-block;background:#efeae0;border-radius:5px;padding:1px 7px;font-size:11px}
+.rp-apx{color:#8a5a12;cursor:help;font-size:11px}
+.rp-marca{display:inline-block;background:#e7edfb;color:#2a4a8a;border-radius:4px;
+  padding:0 5px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:help}
+@media(max-width:820px){.rp-tab td.c,.rp-tab td.q{width:auto}
+  .rp-tab,.rp-tab tbody,.rp-tab tr,.rp-tab td{display:block;width:auto}
+  .rp-tab thead{display:none}.rp-tab td{border:none;padding:2px 0}
+  .rp-tab tr{border-bottom:1px solid #ece7dd;padding:8px 0;display:block}}
+.rp-aviso{background:#fdf1e0;border:1px solid #e8d3ae;color:#8a5a12;border-radius:8px;
+  padding:9px 12px;font-size:12.5px;line-height:1.55;margin:10px 0}
+/* --- conferencia da resposta ouvindo a gravacao (12/08/2026) --- */
+/* Coluna nova ao lado da extraida. A extraida e' READ-ONLY (dado de origem); a
+   conferida e' o unico texto que a pesquisadora digita, sem sobrescrever aquela. */
+.rp-tab td.a{width:29%}
+.rp-tab td.cf{width:29%;font-size:12.5px}
+.rp-cf-ta{width:100%;min-height:46px;font:inherit;font-size:12.5px;line-height:1.5;
+  border:1px solid var(--bd,#e7e1d6);border-radius:8px;padding:6px 8px;resize:vertical;
+  background:#fffdf8;color:#232019;box-sizing:border-box}
+.rp-cf-ta:focus{outline:none;border-color:#8a7fd6;background:#fff}
+.rp-cf-ta:disabled{background:#f4f1ea;color:#8a8272}
+.rp-cf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:5px;font-size:11px}
+.rp-cf-copiar{font:inherit;font-size:11px;cursor:pointer;border:1px solid var(--bd,#e7e1d6);
+  background:#fff;border-radius:6px;padding:3px 9px;color:#41392e}
+.rp-cf-copiar:hover{border-color:#bdb4a4}
+.rp-cf-div{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:#41392e;
+  user-select:none}
+.rp-cf-div input{margin:0;cursor:pointer}
+.rp-cf-st{margin-left:auto;font-weight:700;font-size:10px;text-transform:uppercase;
+  letter-spacing:.03em}
+.rp-cf-st.semconf{color:#b8ad9c}
+.rp-cf-st.conf{color:#1d6b39}
+.rp-cf-st.diverge{color:#a12d2d}
+/* Linha marcada como diverge (pela pessoa, nunca automatico) ganha um traco
+   lateral vermelho na coluna conferida: serve para varrer de relance onde a
+   gravacao contou algo diferente da transcricao. */
+.rp-tab tr.rp-linha-diverge td.cf{box-shadow:inset 3px 0 0 #d98a8a}
+.rp-salvar{display:flex;align-items:center;gap:10px;font-size:12px;color:#6b6255;margin:10px 0 2px}
+.rp-salvar .est{font-weight:600}
+.rp-salvar .est.ok{color:#1d6b39}
+.rp-salvar .est.erro{color:#a12d2d}
+.rp-salvar .est.salvando{color:#8a5a12}
+.rp-cf-off,.rp-cf-orfaos{font-size:12px;color:#8a5a12;background:#fdf1e0;border:1px solid #e8d3ae;
+  border-radius:8px;padding:8px 11px;margin:8px 0;line-height:1.5}
+@media(max-width:820px){.rp-tab td.a,.rp-tab td.cf{width:auto}}
+/*respostas>>*/
+:root{--bg:#f7f6f3;--card:#fff;--tx:#232019;--mut:#6b6255;--bd:#e7e1d6;
+--ac:#2563eb;--or:#e07b2f;--orbg:#fbe9d8;--blbg:#e7edfb;--chip:#eef2ff;
+--chiptx:#3730a3;--okbg:#e6f0e6;--oktx:#2f6d3a}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+background:var(--bg);color:var(--tx);padding:20px;font-size:14px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;min-width:132px}
+.kpi .n{font-size:24px;font-weight:700}
+.kpi .t{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;border-bottom:2px solid var(--bd)}
+.tab{padding:9px 14px;cursor:pointer;border:1px solid transparent;border-bottom:none;
+border-radius:9px 9px 0 0;font-weight:600;color:var(--mut);font-size:13px;position:relative;top:2px}
+.tab.on{background:var(--card);border-color:var(--bd);color:var(--ac)}
+.tab.pf.on{color:var(--or)} .tab.lm.on{color:#b45309}
+.tab .b{background:#efeae0;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:5px;color:var(--mut)}
+.tab.on .b{background:var(--chip);color:var(--chiptx)}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.panel h2{font-size:13px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.expl{font-size:13px;line-height:1.6;color:#41392e}
+.expl b,.expl strong{color:var(--tx)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+.bar .lbl{width:252px;text-align:right;color:var(--mut);flex-shrink:0;white-space:nowrap;
+overflow:hidden;text-overflow:ellipsis}
+.bar .track{flex:1;background:#efeae0;border-radius:5px;overflow:hidden;height:16px;min-width:40px}
+.bar .fill{height:100%}
+.est .fill{background:var(--ac)} .prof .fill{background:var(--or)}
+.bar:hover .fill{opacity:.82}
+.bar .val{width:64px;font-weight:700;text-align:right;white-space:nowrap;color:var(--tx)}
+.who{font-size:11px;color:var(--mut);margin:0 0 6px 260px;line-height:1.45;display:none}
+body.showwho .who{display:block}
+.itc{border-radius:8px;padding:9px 13px;font-size:12.5px;line-height:1.55;margin-bottom:10px}
+.itc.red{background:#fdecea;border:1px solid #f3c9c4;color:#8a2b22}
+.itc.amb{background:#fff8ec;border:1px solid #f0e0bf;color:#7a5a12}
+.itc b{font-weight:700}
+.itc code{background:rgba(0,0,0,.05);border-radius:4px;padding:0 4px;font-size:11.5px}
+table.dp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.dp th,table.dp td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
+table.dp th{background:#faf8f4;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+table.dp tr:last-child td{border-bottom:none}
+table.dp td.n{font-weight:700;white-space:nowrap;width:1%}
+.yes{display:inline-block;background:var(--okbg);color:var(--oktx);border-radius:6px;
+padding:1px 7px;font-size:10.5px;font-weight:700}
+.no{color:#a49a8b;font-size:11.5px}
+.inst{display:inline-block;background:#eaf1f7;color:#0f5a86;border-radius:6px;
+padding:1px 6px;font-size:10px;margin:1px 3px 1px 0;font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+button.ctl{background:var(--card);border:1px solid var(--bd);color:var(--tx);
+border-radius:8px;padding:7px 12px;font-size:12.5px;cursor:pointer;font-weight:600}
+button.ctl:hover{background:#faf8f4}
+button.ctl.on{background:var(--chip);color:var(--chiptx);border-color:#c9d2fb}
+.legend{font-size:11px;color:var(--mut);margin-bottom:10px}
+.legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin:0 3px 0 10px}
+details.meth{margin-top:4px}
+details.meth summary{cursor:pointer;color:var(--ac);font-size:12.5px;font-weight:600;padding:4px 0}
+details.meth ul{margin:6px 0 4px;padding-left:18px}
+details.meth li{font-size:12.5px;color:#41392e;line-height:1.55;margin:4px 0}
+details.tbl{margin-top:10px}
+details.tbl summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:600;padding:4px 0}
+details.tbl summary:hover{color:var(--ac)}
+ul.lim{margin:0;padding-left:18px}
+ul.lim li{font-size:13px;line-height:1.6;color:#41392e;margin-bottom:9px}
+ul.lim li b{color:var(--tx)}
+.hide{display:none}
+.foot{color:var(--mut);font-size:11px;margin-top:22px;text-align:center;line-height:1.7}
+.foot code{background:#efeae0;border-radius:4px;padding:0 4px}
+</style></head><body><div class="wrap">
+
+<h1>Habilidades para uso responsável de IA no ensino de TI</h1>
+<div class="sub">Codificação consolidada das entrevistas com professores &middot;
+Doutorado Profissional em Engenharia de Software, CESAR School</div>
+
+<div class="itc red"><b>Uso interno — contém dados identificáveis.</b> Este painel
+traz nomes reais e instituições dos participantes. Não versione, não publique e
+não compartilhe. Para qualquer uso externo (artigo, defesa, apresentação), gere a
+versão anonimizada.</div>
+
+<div class="itc amb"><b>Leitura preliminar, revisada mas não aprovada como
+resultado.</b> Visualiza a base derivada das abas de habilidades da planilha, com
+as decisões de codificação já aplicadas. Esta reconstrução — fonte nova,
+denominador de 27 — foi revisada em <code>reviews/003-interviews-nova-fonte</code>;
+a rodada anterior (<code>reviews/001-interviews-skills</code>) cobriu a
+<em>versão anterior</em> da planilha e não vale para esta. Continua sem
+rastreabilidade a trechos de entrevista. Não use como resultado.</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="n">27</div><div class="t">entrevistas no arquivo</div></div>
+  <div class="kpi"><div class="n">27</div><div class="t">na matriz, nos dois modos</div></div>
+  <div class="kpi"><div class="n">364</div><div class="t">menções codificadas</div></div>
+  <div class="kpi"><div class="n">24</div><div class="t">habilidades no framework</div></div>
+</div>
+
+<div class="panel"><h2>Como ler estes números</h2>
+<div class="expl"><b>Denominador único: 27.</b> Os 27 professores entrevistados
+respondem os dois blocos — estimulado e espontâneo — e todos os 27 estão nas duas
+matrizes. Por isso as duas seções são comparáveis entre si e não há distinção
+entre "presente" e "codificado". O que varia é <b>quantas</b> habilidades cada um
+marcou: isso é dado, não lacuna.</div>
+<details class="meth"><summary>Regras de contagem aplicadas</summary>
+<ul>
+<li>Conta como marcação qualquer célula que comece por <code>x</code>, sem
+distinguir maiúscula de minúscula. Isso inclui os <code>X</code> de
+<em>Propriedade Intelectual e Autoria</em> e <em>Mentalidade Centrada no
+Humano</em> na coluna de Docente 18.</li>
+<li>Uma marcação na coluna de Docente 20 está em linha sem nome de
+habilidade e <b>não foi atribuída</b> a nenhuma barra.</li>
+<li>Rótulos consolidados por decisão do pesquisador, com o registro auditável em
+<code>interviews/derived/consolidacao-rotulos.csv</code>. Quando dois rótulos
+fundidos vinham da mesma pessoa, as linhas foram colapsadas para contá-la
+<b>uma vez</b> por habilidade e modo — 372 marcações na planilha, 364 depois da
+deduplicação.</li>
+<li>Grafias divergentes da mesma pessoa na fonte (<em>Docente 01</em> /
+<em>Docente 01</em>, <em>Docente 27</em> / <em>Docente 27</em>) são unificadas
+pelo <code>participante_id</code>, sem alterar a planilha.</li>
+<li>Rótulo com zero marcações não gera barra.</li>
+</ul></details></div>
+
+<div class="tabs">
+  <!--<<respostas--><div class="tab on" data-t="ent" hidden data-publico-oculto="1">Respostas por professor</div><!--respostas>>--><div class="tab" data-t="est">Menções estimuladas <span class="b"></span></div>
+  <div class="tab pf" data-t="esp">Menções espontâneas <span class="b"></span></div>
+  <div class="tab" data-t="cov">Cobertura por participante <span class="b"></span></div>
+  <div class="tab" data-t="ref">Fontes por habilidade <span class="b"></span></div>
+  <div class="tab lm" data-t="lim">Limitações</div><!--<<evolucao--><div class="tab" data-t="evo">📈 Evolução das perguntas</div><!--evolucao>>-->
+</div>
+
+<div class="controls">
+  <button class="ctl" id="tw">Mostrar nomes nas barras</button>
+  <span class="legend"><span class="sw" style="background:var(--ac)"></span>estudantes
+  <span class="sw" style="background:var(--or)"></span>professores</span>
+</div>
+
+<!--<<respostas-->
+<section id="s-ent">
+  <div class="panel">
+    <h2>Perguntas e respostas por professor</h2>
+    <p>O que cada professor respondeu, como esta' na planilha de consolidacao.
+    Nada foi resumido, reescrito ou corrigido: a celula da planilha e' o que
+    aparece na tela. 27 professores, 1664 linhas.</p>
+    <p>A categoria vem da aba <b>Base de Perguntas</b>, casando cada linha com o
+    roteiro. 70 linhas casaram por aproximacao e estao marcadas com
+    <span class="rp-apx">~</span>. O que nao casou fica como <b>Sem categoria</b>,
+    em vez de receber palpite.</p>
+    <p>No modo <b>Um professor</b>, cada linha tem um campo <b>resposta conferida
+    (gravacao)</b>: digite ali o que voce ouve na gravacao daquela entrevista. A
+    <b>resposta extraida</b> da transcricao fica ao lado, intacta — uma nao
+    sobrescreve a outra. O campo comeca vazio; use <b>copiar extraida</b> quando
+    ela ja' estiver certa, e marque <b>diverge</b> voce mesma quando a gravacao
+    disser algo diferente. A marca nunca e' automatica: contexto e nuance sao seus.</p>
+    <p class="rp-aviso"><b>Uso interno.</b> Esta aba mostra resposta ligada a nome
+    real. Nao publicar. A resposta extraida e' lida da planilha a cada abertura; a
+    conferida que voce digita e' gravada em <code>interviews/derived/respostas-conferidas.csv</code>.</p>
+  </div>
+
+  <div class="rp-modos">
+    <button class="rp-modo on" data-modo="um">Um professor</button>
+    <button class="rp-modo" data-modo="comparar">Comparar respostas</button>
+  </div>
+
+  <div class="rp-filtros">
+    <select id="rp-inst"><option value="">todas as instituicoes</option><option value="CESAR SCHOOL">CESAR SCHOOL</option><option value="CESAR,SCHOOL">CESAR,SCHOOL</option><option value="Cesar School">Cesar School</option><option value="Embarque Digital">Embarque Digital</option><option value="FCAP">FCAP</option><option value="Faculdade Dom Bosco">Faculdade Dom Bosco</option><option value="IFPE">IFPE</option><option value="PUC MINAS">PUC MINAS</option><option value="Porto Digital">Porto Digital</option><option value="School">School</option><option value="UFAL">UFAL</option><option value="UFPE">UFPE</option><option value="UFRPE">UFRPE</option><option value="UNCISAL">UNCISAL</option><option value="UNIC">UNIC</option><option value="UNICAP">UNICAP</option><option value="Universidade Federal de Pernambuco, Departamento de Design / PPGDesign">Universidade Federal de Pernambuco, Departamento de Design / PPGDesign</option><option value="Venturus / PUC - Campinas">Venturus / PUC - Campinas</option></select>
+    <input id="rp-txt" placeholder="buscar no texto das respostas...">
+    <span class="cnt" id="rp-cnt"></span>
+  </div>
+  <!-- O filtro de categoria saiu daqui e foi para dentro da tabela, na coluna
+       que ele filtra. Pedido de Antonio em 09/08/2026: filtro longe da coluna
+       obriga a lembrar o que ele estava filtrando. A busca de texto ficou, mas
+       agora procura so' no texto das RESPOSTAS: a pergunta ja' tem coluna
+       propria e misturar as duas fazia um termo achar linha por causa do
+       enunciado, nao do que o professor disse. -->
+  <input id="rp-nome" class="rp-busca" placeholder="filtrar professor pelo nome...">
+  <div class="rp-profs" id="rp-profs"></div>
+  <div class="rp-salvar" id="rp-salvar" hidden>conferencia da gravacao: <span class="est" id="rp-salvar-est">pronta</span></div>
+  <div class="rp-cf-orfaos" id="rp-cf-orfaos" hidden></div>
+  <div id="rp-corpo"></div>
+</section>
+<script>
+/* Versao publica e estatica. Nao ha servidor: as rotas de leitura sao
+   respondidas com os dados embutidos abaixo, e qualquer escrita e recusada
+   com 405. O codigo do painel nao foi alterado — ele roda igual ao local. */
+window.__ESTATICO = {};
+window.__PUBLICO = true;
+(function(){
+  const orig = window.fetch ? window.fetch.bind(window) : null;
+  const json = (corpo, status) => Promise.resolve(new Response(
+      JSON.stringify(corpo), {status: status,
+      headers: {'Content-Type': 'application/json; charset=utf-8'}}));
+  window.fetch = function(url, opts){
+    const u = String((url && url.url) || url || '');
+    const metodo = ((opts && opts.method) || 'GET').toUpperCase();
+    const rota = Object.keys(window.__ESTATICO).find(r => u.indexOf(r) >= 0);
+    if (u.indexOf('/api/') >= 0 && metodo !== 'GET')
+      return json({erro: 'pagina publica, somente leitura'}, 405);
+    if (rota) return json(window.__ESTATICO[rota], 200);
+    if (u.indexOf('/api/') >= 0) return json({erro: 'rota fora do snapshot'}, 404);
+    return orig ? orig(url, opts) : Promise.reject(new Error('sem fetch'));
+  };
+})();
+</script>
+<style>
+/* Some com o que grava. Botao que aceita clique e nao guarda e' pior que
+   botao ausente: parece que guardou. */
+  [data-tese],[data-unref],[data-perg],#ts-imp,#ts-impb,#ts-clr,#pg-dlg{
+    pointer-events:none !important;opacity:.55 !important;cursor:default !important}
+  #ts-off{display:none !important}
+  .pub-aviso{background:#eef4ff;border:1px solid #c7d7f5;border-left:4px solid #3b6fd4;
+    border-radius:9px;padding:11px 15px;margin:0 0 14px;font-size:13.5px;line-height:1.55;color:#24406e}
+  .pub-aviso b{color:#16294a}
+</style>
+<div class="pub-aviso"><b>Retrato público e estático, com nomes substituídos.</b> Cada participante aparece como <b>Docente NN</b>. A aba de respostas verbatim não faz parte desta versão. <b>Instituição e área foram mantidas</b>, por decisão da pessoa pesquisadora: em uma cidade, o par instituição + área restringe bastante quem pode ser — o pseudônimo reduz a exposição, não a elimina.</div>
+<script>
+(function(){
+  const CATS = ["Barreiras de Acesso em IA", "Cadastro do participante", "Dados e Privacidade", "Habilidades apontadas · Estudantes", "Habilidades apontadas · Professores", "Habilidades para o bom uso de IA", "IA e Qualididade e a validação da Qualidade das Respostas", "IA e Sociedade", "IA em Sala de Aula", "Posicionamento docente e politicas de uso", "Relação Alunos com IA", "Relação professor com a IA", "Sem categoria"];
+  let RP = [];
+  let modo = 'um';
+  const sel = new Set();          // professores marcados no modo comparar
+  const profs = document.getElementById('rp-profs');
+  const corpo = document.getElementById('rp-corpo');
+  const fNome = document.getElementById('rp-nome');
+  const fInst = document.getElementById('rp-inst');
+  // O select de categoria agora e' redesenhado junto com a tabela, entao nao da'
+  // para guardar a referencia do elemento: ele deixa de existir a cada render.
+  // O valor escolhido fica aqui, fora do DOM, e a tabela o reaplica ao redesenhar.
+  let catSel = '';
+  const fCat = { get value(){ return catSel; } };
+  const fTxt  = document.getElementById('rp-txt');
+  const cnt   = document.getElementById('rp-cnt');
+  let atual = null;
+
+  // Conferencia da gravacao: estado separado da fonte. RC e' o mapa COMPLETO de
+  // todas as conferidas (chave -> {professor,categoria,pergunta,ordem,conferida,
+  // diverge}), mantido no cliente e reenviado inteiro a cada gravacao, como a
+  // triagem faz com as marcas. So' e' escrito o que a pessoa digita ou marca.
+  const SEP = String.fromCharCode(0);
+  let RC = {};
+  let rcVersao = '';
+  let rcDisponivel = false;
+  let curLinhas = [];
+  const barSalvar = document.getElementById('rp-salvar');
+  const estSalvar = document.getElementById('rp-salvar-est');
+  const bxOrfaos  = document.getElementById('rp-cf-orfaos');
+
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // Chave interna: professor + categoria + pergunta + ordem, unidos por SEP. So'
+  // precisa ser consistente no cliente — carregaRC reconstroi as chaves com o
+  // mesmo SEP, entao nao depende do formato exato que o servidor mandou. A ordem
+  // 1-based (`l._ord`) e o texto canonico vem da mesma fonte que o store le'.
+  function keyOf(l){ return [l._prof, l.cat, l.q, String(l._ord)].join(SEP); }
+
+  function elegiveis(){
+    const q = (fNome.value||'').toLowerCase(), i = fInst.value;
+    return RP.filter(p => (!q || p.nome.toLowerCase().includes(q)) && (!i || p.inst === i));
+  }
+
+  function linhasDe(p){
+    const c = fCat.value, t = (fTxt.value||'').toLowerCase();
+    // So' `l.r`: a pergunta tem coluna propria e nao entra mais na busca livre.
+    // Antes um termo casava pelo enunciado e a linha aparecia como se o
+    // professor tivesse falado nele.
+    return p.linhas.filter(l => (!c || l.cat === c)
+      && (!t || l.r.join(' ').toLowerCase().includes(t)));
+  }
+
+  function abas(){
+    const vis = elegiveis();
+    if(modo === 'um' && (!atual || !vis.some(p => p.nome === atual)))
+      atual = vis.length ? vis[0].nome : null;
+    profs.innerHTML = vis.map(p => {
+      const on = modo === 'um' ? p.nome === atual : sel.has(p.nome);
+      return `<button class="rp-prof${on?' on':''}" data-rp="${esc(p.nome)}">${esc(p.nome)}</button>`;
+    }).join('') || '<span style="color:#6b6255;font-size:13px">nenhum professor com esse filtro.</span>';
+  }
+
+  function titulo(p){
+    const a = (p.areas||[]).length ? ` (${(p.areas||[]).map(esc).join(' / ')})` : '';
+    return esc(p.nome) + (p.inst ? ' - ' + esc(p.inst) : '') + a + (window.evoData?window.evoData(p.nome):'');
+  }
+
+  // Estado por linha da conferencia, a partir da marca que a pessoa fez. NUNCA
+  // deduzido de comparar textos: diverge so' aparece se ela ligou a marca.
+  function statusCf(conf, div){
+    if(div) return ['diverge','diverge'];
+    if(conf && conf.trim()) return ['conf','conferido'];
+    return ['semconf','sem conferir'];
+  }
+
+  function celulaConf(l, idx){
+    if(!rcDisponivel)
+      return '<td class="cf"><span style="color:#b8ad9c;font-size:11.5px">'
+           + 'conferencia indisponivel neste servidor</span></td>';
+    const rc = RC[keyOf(l)] || {conferida:'', diverge:false};
+    const st = statusCf(rc.conferida, rc.diverge);
+    // esc no valor do textarea protege ate' um `</textarea>` digitado.
+    return `<td class="cf" data-row="${idx}">`
+      + `<textarea class="rp-cf-ta" data-cf-ta rows="2" `
+      + `placeholder="digite a resposta ouvindo a gravacao...">${esc(rc.conferida)}</textarea>`
+      + `<div class="rp-cf-bar">`
+      + `<button type="button" class="rp-cf-copiar" data-cf-copiar>copiar extraida</button>`
+      + `<label class="rp-cf-div"><input type="checkbox" data-cf-div${rc.diverge?' checked':''}> diverge da extraida</label>`
+      + `<span class="rp-cf-st ${st[0]}" data-cf-st>${st[1]}</span>`
+      + `</div></td>`;
+  }
+
+  function tabela(linhas, comProfessor){
+    // Guardado para os handlers acharem a linha pela posicao, sem por texto em
+    // atributo (o texto tem aspas, acento e NUL da chave).
+    curLinhas = linhas;
+    const corpoHtml = linhas.map((l, idx) => {
+      const txt = l.r.length
+        ? l.r.map(v => `<span class="v">${esc(v)}</span>`).join('')
+        : '<span class="v">sem resposta registrada</span>';
+      const apx = l.aprox ? ' <span class="rp-apx" title="categoria casada por aproximacao">~</span>' : '';
+      const mk = l.marca ? `<span class="rp-marca" title="pergunta acrescentada fora do roteiro">${esc(l.marca)}</span> ` : '';
+      const rc = rcDisponivel ? (RC[keyOf(l)] || null) : null;
+      const clsDiv = (rc && rc.diverge) ? ' rp-linha-diverge' : '';
+      const cls = (l.r.length ? '' : 'vazia') + clsDiv;
+      return `<tr class="${cls.trim()}">`
+           + (comProfessor ? `<td class="p">${esc(l._prof)}<span class="i">${esc(l._inst||'')}</span></td>` : '')
+           + `<td class="c"><span class="rp-cat">${esc(l.cat)}</span>${apx}</td>`
+           + `<td class="q">${mk}${esc(l.q)}</td><td class="a">${txt}</td>`
+           + celulaConf(l, idx) + `</tr>`;
+    }).join('') || `<tr><td colspan="4" style="color:#6b6255;padding:14px 0">nenhuma linha com esse filtro.</td></tr>`;
+    return `<table class="rp-tab"><thead><tr>`
+      + (comProfessor ? '<th>Professor</th>' : '')
+      + `<th>Categoria</th><th>Pergunta</th><th>Resposta extraida</th>`
+      + `<th>Resposta conferida (gravacao)</th></tr></thead><tbody>${corpoHtml}</tbody></table>`;
+  }
+
+  function mostra(){
+    if(!RP.length){ return; }
+    // A conferencia so' aparece no modo Um professor: e' onde se ouve a gravacao
+    // de uma entrevista por vez. A matriz de comparar continua so' de leitura.
+    if(barSalvar) barSalvar.hidden = !(rcDisponivel && modo === 'um');
+    if(modo === 'um'){
+      const p = RP.find(x => x.nome === atual);
+      if(!p){ corpo.innerHTML = ''; cnt.textContent = ''; return; }
+      const vis = linhasDe(p);
+      cnt.textContent = `${vis.length} de ${p.linhas.length} linhas`;
+      corpo.innerHTML = `<div class="rp-cab"><h3>${titulo(p)}</h3>`
+        + `<span class="n">${p.linhas.length} linhas da planilha</span></div>` + tabela(vis, false);
+      return;
+    }
+    // Comparar: MATRIZ. Coluna A categoria, coluna B pergunta, uma coluna por
+    // professor a partir da C. Pedido de Antonio em 09/08/2026.
+    //
+    // A forma anterior era longa: uma linha por (professor, pergunta), com o
+    // professor virando coluna repetida. Comparar duas respostas exigia achar
+    // duas linhas distantes. Na matriz a comparacao e' horizontal, que e' como
+    // a pergunta e' feita: "o que cada um respondeu para esta?".
+    //
+    // A matriz e' esparsa e isso NAO e' defeito de dados. Sao 122 perguntas
+    // distintas e so' 28 existem para todos os 27 professores: as abas da
+    // planilha nao tem conjunto comum de campos (13 conjuntos distintos, ver
+    // `audita_layout_abas.py`). Por isso celula vazia e' desenhada em dois
+    // simbolos diferentes, e nunca em branco:
+    //   .  a pergunta existe na aba daquele professor e a resposta esta' vazia
+    //   -  a pergunta nem aparece na aba daquele professor
+    // Confundir os dois faria "nao perguntaram" parecer "nao respondeu".
+    const alvo = elegiveis().filter(p => !sel.size || sel.has(p.nome));
+    if(!alvo.length){
+      corpo.innerHTML = '<div class="rp-cab"><h3>Comparar respostas</h3>'
+        + '<span class="n">nenhum professor selecionado</span></div>';
+      cnt.textContent = '';
+      return;
+    }
+
+    // Universo de perguntas: o que o filtro deixa passar, em qualquer um dos
+    // professores escolhidos. Uma pergunta que so' um deles tem continua sendo
+    // linha, com `-` nos outros; some-la esconderia justamente a variacao de
+    // roteiro que a matriz existe para mostrar.
+    const chaveDe = l => l.cat + '   ' + l.q;
+    const perguntas = new Map();
+    alvo.forEach(p => linhasDe(p).forEach(l => {
+      if(!perguntas.has(chaveDe(l))) perguntas.set(chaveDe(l), l);
+    }));
+    const ordem = [...perguntas.values()]
+      .sort((a,b) => (a.cat+a.q).localeCompare(b.cat+b.q,'pt'));
+
+    // Indice por professor: chave da pergunta -> linha. `has` responde se a
+    // pergunta existe na aba; `r.length` responde se foi respondida.
+    const porProf = new Map();
+    alvo.forEach(p => {
+      const m = new Map();
+      p.linhas.forEach(l => m.set(chaveDe(l), l));
+      porProf.set(p.nome, m);
+    });
+
+    let respondidas = 0, ausentes = 0, brancas = 0;
+    const corpoHtml = ordem.map(ref => {
+      const apx = ref.aprox ? ' <span class="rp-apx" title="categoria casada por aproximacao">~</span>' : '';
+      const mk = ref.marca ? `<span class="rp-marca" title="pergunta acrescentada fora do roteiro">${esc(ref.marca)}</span> ` : '';
+      const celulas = alvo.map(p => {
+        const l = porProf.get(p.nome).get(chaveDe(ref));
+        if(!l){ ausentes++; return '<td class="m falta" title="esta pergunta nao aparece na aba deste professor">—</td>'; }
+        if(!l.r.length){ brancas++; return '<td class="m branca" title="pergunta na aba, resposta em branco">·</td>'; }
+        respondidas++;
+        return `<td class="m">${l.r.map(v => `<span class="v">${esc(v)}</span>`).join('')}</td>`;
+      }).join('');
+      return `<tr><td class="c"><span class="rp-cat">${esc(ref.cat)}</span>${apx}</td>`
+           + `<td class="q">${mk}${esc(ref.q)}</td>${celulas}</tr>`;
+    }).join('') || `<tr><td colspan="${alvo.length+2}" style="color:#6b6255;padding:14px 0">nenhuma pergunta com esse filtro.</td></tr>`;
+
+    const cabProf = alvo.map(p =>
+      `<th class="m" title="${esc(p.inst||'')}">${esc(p.nome)}<span class="i">${esc(p.inst||'')}</span></th>`).join('');
+    // O select de categoria mora no cabecalho da coluna que ele filtra.
+    const opts = ['<option value="">todas as categorias</option>']
+      .concat(CATS.map(c => `<option value="${esc(c)}"${c===catSel?' selected':''}>${esc(c)}</option>`)).join('');
+
+    cnt.textContent = `${ordem.length} pergunta(s) x ${alvo.length} professor(es) · `
+      + `${respondidas} respondida(s), ${brancas} em branco, ${ausentes} fora da aba`;
+    const quais = sel.size ? `${alvo.length} selecionado(s)` : `todos os ${alvo.length} do filtro`;
+    corpo.innerHTML = `<div class="rp-cab"><h3>Comparando ${quais}</h3>`
+      + `<span class="n">uma linha por pergunta, uma coluna por professor. `
+      + `<b>·</b> resposta em branco, <b>—</b> pergunta ausente na aba daquele professor. `
+      + `Ordenado por categoria e pergunta, fora da ordem da planilha; a ordem `
+      + `original vale no modo um professor</span></div>`
+      + `<div class="rp-rolagem"><table class="rp-tab rp-matriz"><thead><tr>`
+      + `<th class="c"><div>Categoria</div><select data-rpcat>${opts}</select></th>`
+      + `<th class="q">Pergunta</th>${cabProf}</tr></thead><tbody>${corpoHtml}</tbody></table></div>`;
+  }
+
+  function semPular(fn){
+    const y = profs.getBoundingClientRect().top;
+    fn();
+    window.scrollBy(0, profs.getBoundingClientRect().top - y);
+  }
+
+  // ---- conferencia: carga, estado e gravacao -------------------------
+  function carregaRC(estado){
+    RC = {};
+    const m = (estado && estado.conferidas) || {};
+    // Re-chaveia pelos campos do proprio valor, sem depender do formato exato da
+    // chave que o servidor mandou: keyOf(linha) tem de bater com isto, e as duas
+    // partem dos mesmos textos canonicos da planilha.
+    Object.keys(m).forEach(k => {
+      const v = m[k];
+      const lk = [v.professor, v.categoria, v.pergunta, String(v.ordem)].join(SEP);
+      RC[lk] = {professor:v.professor, categoria:v.categoria, pergunta:v.pergunta,
+                ordem:String(v.ordem), conferida:v.conferida||'', diverge:!!v.diverge};
+    });
+    rcVersao = (estado && estado.versao) || '';
+  }
+
+  function listaRC(){
+    return Object.keys(RC).map(k => RC[k])
+      .filter(v => (v.conferida && v.conferida.trim()) || v.diverge);
+  }
+
+  function setEst(cls, txt){
+    if(estSalvar){ estSalvar.className = 'est ' + cls; estSalvar.textContent = txt; }
+  }
+  function hora(){ const d = new Date(); return d.toTimeString().slice(0,5); }
+
+  let salvarTimer = null, salvando = false, pendente = false;
+  function agendaSalvar(){ clearTimeout(salvarTimer); salvarTimer = setTimeout(salvar, 800); }
+  function salvarJa(){ clearTimeout(salvarTimer); salvar(); }
+  function salvar(){
+    if(!rcDisponivel) return;
+    // Single-flight: enquanto uma gravacao voa, a proxima fica pendente e dispara
+    // ao terminar. Sem isso, duas gravacoes concorrentes competiriam pela versao
+    // e uma levaria 409 da outra sem necessidade.
+    if(salvando){ pendente = true; return; }
+    salvando = true; setEst('salvando', 'salvando...');
+    fetch('/api/respostas-conferidas', {method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({conferidas: listaRC(), base: rcVersao})})
+      .then(r => r.json().then(d => ({ok:r.ok, status:r.status, d})))
+      .then(o => {
+        if(o.ok){ rcVersao = o.d.versao; setEst('ok', 'salvo ' + hora()); }
+        else if(o.status === 409){
+          // Outra aba gravou primeiro. Recarrega o que esta' no disco e redesenha;
+          // a edicao em voo se perde, mas nunca sobrescreve o que a outra salvou.
+          setEst('erro', 'recarregado: outra aba salvou antes');
+          if(o.d.atual) carregaRC(o.d.atual);
+          mostra();
+        } else { setEst('erro', (o.d && o.d.erro) || ('erro ' + o.status)); }
+      })
+      .catch(() => setEst('erro', 'sem conexao com o servidor'))
+      .finally(() => { salvando = false; if(pendente){ pendente = false; agendaSalvar(); } });
+  }
+
+  function verificaOrfaos(){
+    if(!bxOrfaos) return;
+    if(!rcDisponivel){ bxOrfaos.hidden = true; return; }
+    const existentes = new Set();
+    RP.forEach(p => (p.linhas||[]).forEach(l => existentes.add(keyOf(l))));
+    const orfas = Object.keys(RC).filter(k => !existentes.has(k));
+    if(orfas.length){
+      bxOrfaos.hidden = false;
+      bxOrfaos.innerHTML = '<b>' + orfas.length + ' conferida(s) sem linha correspondente</b> '
+        + 'na planilha atual — a planilha mudou depois de conferido. Elas continuam no CSV, '
+        + 'mas nao aparecem aqui. Rode <code>python3 tools/review/interviews/respostas_store.py .</code> '
+        + 'para lista-las.';
+    } else { bxOrfaos.hidden = true; }
+  }
+
+  // Le os controles da celula, atualiza RC, o rotulo de status e a marca da linha.
+  function sincronizaLinha(td){
+    if(!td) return;
+    const idx = +td.getAttribute('data-row');
+    const l = curLinhas[idx];
+    if(!l) return;
+    const ta = td.querySelector('[data-cf-ta]');
+    const bx = td.querySelector('[data-cf-div]');
+    const st = td.querySelector('[data-cf-st]');
+    const conferida = ta ? ta.value : '';
+    const diverge = bx ? bx.checked : false;
+    const k = keyOf(l);
+    if((conferida && conferida.trim()) || diverge){
+      RC[k] = {professor:l._prof, categoria:l.cat, pergunta:l.q, ordem:String(l._ord),
+               conferida:conferida, diverge:diverge};
+    } else {
+      delete RC[k];  // sem texto e sem marca e' desconferir
+    }
+    const info = statusCf(conferida, diverge);
+    if(st){ st.className = 'rp-cf-st ' + info[0]; st.textContent = info[1]; }
+    const tr = td.closest('tr');
+    if(tr) tr.classList.toggle('rp-linha-diverge', diverge);
+  }
+
+  profs.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-rp]'); if(!b) return;
+    const nome = b.dataset.rp;
+    if(modo === 'um') atual = nome;
+    else if(sel.has(nome)) sel.delete(nome); else sel.add(nome);
+    semPular(() => { abas(); mostra(); });
+  });
+  document.querySelectorAll('.rp-modo').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.rp-modo').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    modo = b.dataset.modo;
+    semPular(() => { abas(); mostra(); });
+  }));
+  [fInst, fTxt].forEach(e => e.addEventListener('input', () => semPular(() => { abas(); mostra(); })));
+  // O select de categoria vive dentro da tabela e e' recriado a cada render,
+  // entao o listener e' delegado no container em vez de preso ao elemento.
+  corpo.addEventListener('change', ev => {
+    const s = ev.target.closest('select[data-rpcat]');
+    if(!s) return;
+    catSel = s.value;
+    semPular(() => { abas(); mostra(); });
+  });
+  fNome.addEventListener('input', () => semPular(() => { abas(); mostra(); }));
+
+  // ---- conferencia: eventos da celula editavel -----------------------
+  // Delegados no corpo porque a tabela e' redesenhada a cada render. Digitar so'
+  // atualiza RC e agenda a gravacao; nunca redesenha, senao o campo perde o foco.
+  corpo.addEventListener('input', ev => {
+    const ta = ev.target.closest('[data-cf-ta]'); if(!ta) return;
+    sincronizaLinha(ta.closest('td.cf')); agendaSalvar();
+  });
+  corpo.addEventListener('change', ev => {
+    const bx = ev.target.closest('[data-cf-div]'); if(!bx) return;
+    sincronizaLinha(bx.closest('td.cf')); salvarJa();
+  });
+  corpo.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-cf-copiar]'); if(!b) return;
+    const td = b.closest('td.cf'); const idx = +td.getAttribute('data-row');
+    const l = curLinhas[idx]; if(!l) return;
+    const ta = td.querySelector('[data-cf-ta]');
+    // Copia a extraida para o campo: atalho para o caso comum em que a extracao
+    // ja' esta' certa e conferir e' so' confirmar. Nao liga `diverge`.
+    if(ta) ta.value = (l.r || []).join('\n');
+    sincronizaLinha(td); salvarJa();
+  });
+  corpo.addEventListener('focusout', ev => {
+    const ta = ev.target.closest('[data-cf-ta]'); if(!ta) return;
+    salvarJa();  // ao sair do campo, grava sem esperar o debounce
+  });
+
+  fetch('/api/respostas').then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(d => {
+      RP = d.professores || [];
+      // Carimba cada linha com professor, instituicao e a ordem 1-based na aba —
+      // a mesma `ordem` do extrator e da chave do store.
+      RP.forEach(p => (p.linhas || []).forEach((l, i) => {
+        l._prof = p.nome; l._inst = p.inst || ''; l._ord = i + 1;
+      }));
+      // As conferidas vem de outra rota. Falha aqui nao derruba a aba: a extraida
+      // continua aparecendo, so' a conferencia fica indisponivel e avisada.
+      return fetch('/api/respostas-conferidas')
+        .then(r => { rcDisponivel = !!r.ok; return r.ok ? r.json() : {conferidas:{}, versao:''}; })
+        .catch(() => { rcDisponivel = false; return {conferidas:{}, versao:''}; });
+    })
+    .then(estado => { carregaRC(estado); abas(); mostra(); verificaOrfaos(); })
+    .catch(() => {
+      corpo.innerHTML = '<p class="rp-aviso">As respostas sao lidas da planilha pelo '
+        + 'servidor e esta pagina nao foi aberta por ele. Rode <code>python3 tools/serve.py --dir .</code> '
+        + 'e abra por <code>http://127.0.0.1:8765/</code>.</p>';
+    });
+})();
+</script>
+<!--respostas>>--><section id="s-est" class="hide">
+<div class="panel"><h2>Menções estimuladas</h2>
+<div class="expl">Habilidades do framework apresentadas ao participante, que indicou
+quais considera relevantes. Denominador: <b>27 respondentes</b> — todos têm coluna
+própria na matriz e todos marcaram pelo menos uma habilidade.</div></div>
+<div class="two">
+  <div class="panel"><h2>Habilidades para estudantes</h2>
+    <div id="bar-estimuladas-Estudantes"></div>
+    <details class="tbl"><summary>Ver como tabela</summary>
+      <div id="tab-estimuladas-Estudantes"></div></details></div>
+  <div class="panel"><h2>Habilidades para professores</h2>
+    <div id="bar-estimuladas-Professores"></div>
+    <details class="tbl"><summary>Ver como tabela</summary>
+      <div id="tab-estimuladas-Professores"></div></details></div>
+</div>
+</section>
+
+<section id="s-esp" class="hide">
+<div class="panel"><h2>Menções espontâneas</h2>
+<div class="expl">Citadas sem estímulo, antes da apresentação do framework.
+Denominador: <b>27 respondentes</b> — todos têm linha própria na matriz; só Docente 21 não marcou nenhuma habilidade. É texto livre, então os rótulos passaram por
+consolidação e open coding decididos pelo pesquisador, cada mapeamento ancorado em
+fonte com página e trecho verbatim
+(<code>interviews/derived/fusoes-verificadas.md</code>). Os que não têm construto
+correspondente em fonte verificada ficaram <b>in vivo</b>, na palavra do professor.
+Passe o mouse na barra para ver a definição ou a âncora.</div></div>
+<div class="two">
+  <div class="panel"><h2>Citadas para estudantes</h2>
+    <div id="bar-espontaneas-Estudantes"></div>
+    <details class="tbl"><summary>Ver como tabela</summary>
+      <div id="tab-espontaneas-Estudantes"></div></details></div>
+  <div class="panel"><h2>Citadas para professores</h2>
+    <div id="bar-espontaneas-Professores"></div>
+    <details class="tbl"><summary>Ver como tabela</summary>
+      <div id="tab-espontaneas-Professores"></div></details></div>
+</div>
+</section>
+
+<section id="s-cov" class="hide">
+<div class="panel"><h2>Cobertura por participante</h2>
+<div class="expl">Os 27 entrevistados, com a instituição registrada na planilha e
+quantas habilidades cada um marcou em cada modo. Todos entraram nas duas matrizes,
+então a coluna deixou de ser "sim/não" e passou a ser a contagem. Variação na
+contagem é resposta do professor, não lacuna de codificação.</div></div>
+<div class="panel"><div id="pt"></div></div>
+</section>
+
+<section id="s-ref" class="hide">
+<div class="panel"><h2>Fontes registradas por habilidade</h2>
+<div class="expl">Referências anotadas na aba <em>Referencias de Habilidades</em>,
+reproduzidas sem alteração — inclusive a grafia <em>Creatividade Original</em>, que
+na aba de referências designa a mesma habilidade contada acima como
+<em>Criatividade Original</em>. A correção da grafia é decisão de quem edita a
+planilha, não do painel.</div></div>
+<div class="panel"><div id="refs"></div></div>
+</section>
+
+<section id="s-lim" class="hide">
+<div class="panel"><h2>Limitações</h2>
+<ul class="lim">
+<li><b>Não é análise aprovada.</b> Houve extração determinística e revisão
+independente, registrada em <code>reviews/003-interviews-nova-fonte</code> — o
+status dessa revisão está no <code>outcome.json</code> da rodada, não nesta
+frase. Mesmo conferida, a aritmética não é resultado de pesquisa: não há
+rastreabilidade a trechos de entrevista e nada aqui foi validado por uma pessoa
+pesquisadora. Não use como resultado.</li>
+<li><b>Consolidação de rótulo é interpretação.</b> As barras da matriz espontânea
+já refletem fusões e open coding decididos pelo pesquisador. Cada mapeamento tem
+fonte com página e trecho verbatim, mas continua sendo escolha de codificação:
+com outro critério, as contagens mudam. Os rótulos originais da planilha estão
+preservados em <code>raw_cell</code> na base derivada.</li>
+<li><b>Três rótulos seguem in vivo.</b> <em>Escrita</em>, <em>Saber escrever</em> e
+<em>Mais leitura</em> não têm construto ancorado em fonte primária disponível no
+disco e ficaram na palavra do professor — sem definição no tooltip.</li>
+<li><b>Codificação não confirmada por amostragem.</b> A checagem por amostra
+existente (12 marcações espontâneas contra as transcrições de Docente 07,
+Docente 18 e Docente 03, com respaldo claro em 10) foi feita sobre a
+<em>versão anterior</em> da planilha e não foi refeita depois da troca de fonte e
+do open coding. Trate a codificação como não verificada.</li>
+<li><b>Sem rastreabilidade.</b> As marcações não apontam para trechos de resposta,
+então nenhuma contagem pode ser conferida contra evidência.</li>
+<li><b>Só a instituição principal.</b> A aba de espontâneas registra uma
+instituição por participante, e é ela que aparece aqui — os 27 têm valor. A versão
+anterior da planilha trazia instituições secundárias para três participantes
+(Docente 16, Docente 03, Docente 22) que a versão atual não tem; manter
+apenas a principal foi decisão do pesquisador.</li>
+<li><b>Grafia pendente.</b> A aba de referências grafa <em>Creatividade
+Original</em>; a matriz, <em>Criatividade Original</em>. É a mesma habilidade e a
+grafia canônica ainda não foi decidida — por isso a tabela de fontes e as barras
+divergem nesse rótulo.</li>
+<li><b>Uma habilidade sem fonte registrada.</b> <em>Alfabetização em IA</em>
+(professores) tem definição na planilha, mas nenhuma referência na aba
+<em>Referencias de Habilidades</em>.</li>
+</ul></div>
+</section>
+
+<!--<<evolucao--><style>
+#s-evo .evo-cards{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 14px}
+#s-evo .evo-card{border:1px solid var(--bd,#e7e1d6);border-radius:12px;padding:10px 14px;background:#fff;min-width:120px}
+#s-evo .evo-card .n{font-size:22px;font-weight:700;display:block}
+#s-evo .evo-card.resp .n{color:#1d6b39} #s-evo .evo-card.branco .n{color:#8a5a12}
+#s-evo .evo-card.naoex .n{color:#2563eb} #s-evo .evo-card.naofeita .n{color:#a12d2d}
+#s-evo .evo-card small{color:#6b6255;font-size:11.5px}
+#s-evo table{border-collapse:collapse;width:100%;font-size:12.5px;margin:8px 0}
+#s-evo th,#s-evo td{border:1px solid var(--bd,#e7e1d6);padding:5px 8px;text-align:left;vertical-align:top}
+#s-evo th{background:#faf8f4;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#6b6255}
+#s-evo td.num{text-align:right;font-variant-numeric:tabular-nums}
+#s-evo .bar{height:9px;border-radius:5px;background:#e7e1d6;overflow:hidden;min-width:60px}
+#s-evo .bar>span{display:block;height:100%;background:#2563eb}
+#s-evo h3{font-size:14px;margin:18px 0 4px}
+.rp-cab .rp-data{font-size:12px;color:#2563eb;font-weight:600;white-space:nowrap}
+</style><section id="s-evo" class="hide">
+  <div class="panel">
+    <h2>📈 Evolução das perguntas</h2>
+    <p class="expl">O roteiro cresceu durante a coleta. Uma pergunta não feita a um
+    professor pode ser porque ele não respondeu (em branco) ou porque a pergunta
+    <b>ainda não existia</b> na data da entrevista dele. Aqui a data de cada
+    entrevista separa as duas. É leitura da estrutura do roteiro, <b>não</b> é
+    resultado de pesquisa, e "primeira aparição" é a data mais antiga em que a
+    pergunta foi <b>observada sendo feita</b>, não a data em que foi redigida.</p>
+    <div id="evo-st" class="st">carregando…</div>
+  </div>
+  <div id="evo-corpo"></div>
+</section><!--evolucao>>--><div class="foot">Fonte: <code>interviews/derived/</code>, gerado por
+<code>tools/review/interviews/build_dashboard_data.py</code> a partir da planilha
+<em>Perguntas para professores - Consolidação para analise.xlsx</em>
+(sha256 <code>7a42036f…</code>) &middot; abas de habilidades apenas. Abas de
+entrevista individual e <em>Lista de Professores</em> não foram lidas.<br>
+Decisões de codificação registradas em
+<code>interviews/derived/log-decisoes.md</code> e
+<code>fusoes-verificadas.md</code>.<br>
+Arquivo autocontido: sem dependências externas, sem chamadas de rede.<br>
+Revisão independente desta versão: <code>reviews/003-interviews-nova-fonte</code>
+(ciclo Claude&nbsp;↔&nbsp;Codex, resultado em <code>outcome.json</code>). A rodada
+<code>reviews/001-interviews-skills</code> cobriu a <em>versão anterior</em> da
+planilha.<br>
+Layout derivado de <code>papers/dashboard/dashboard.html</code>.</div>
+
+</div>
+<script>
+const D = {"estimuladas": {"n": 27, "Estudantes": [{"label": "Pensamento Crítico", "n": 23, "quem": ["Docente 01", "Docente 02", "Docente 03", "Docente 04", "Docente 05", "Docente 06", "Docente 08", "Docente 09", "Docente 10", "Docente 11", "Docente 12", "Docente 13", "Docente 14", "Docente 15", "Docente 16", "Docente 18", "Docente 19", "Docente 21", "Docente 22", "Docente 23", "Docente 25", "Docente 26", "Docente 27"], "desc": "Capacidade de analisar informações, questionar suposições e verificar a veracidade e os vieses dos resultados gerados pela IA."}, {"label": "Alfabetização em IA", "n": 15, "quem": ["Docente 01", "Docente 06", "Docente 08", "Docente 10", "Docente 12", "Docente 13", "Docente 14", "Docente 15", "Docente 18", "Docente 19", "Docente 20", "Docente 21", "Docente 22", "Docente 24", "Docente 25"], "desc": "Compreensão básica de como os modelos funcionam, suas limitações técnicas e o reconhecimento de \"alucinações\"."}, {"label": "Curiosidade e Indagação", "n": 13, "quem": ["Docente 05", "Docente 06", "Docente 09", "Docente 10", "Docente 12", "Docente 14", "Docente 15", "Docente 16", "Docente 18", "Docente 20", "Docente 23", "Docente 26", "Docente 27"], "desc": "Habilidade de formular perguntas profundas e genuínas que guiam a investigação, evitando aceitar a primeira resposta da máquina."}, {"label": "Autorregulação e Metacognição", "n": 11, "quem": ["Docente 01", "Docente 06", "Docente 07", "Docente 09", "Docente 10", "Docente 12", "Docente 13", "Docente 14", "Docente 18", "Docente 25", "Docente 26"], "desc": "Capacidade de monitorar o próprio progresso, identificar quando se está \"travado\" (wheel spinning) e saber quando pedir ajuda à IA ou ao professor."}, {"label": "Engenharia de Prompt", "n": 11, "quem": ["Docente 03", "Docente 04", "Docente 10", "Docente 11", "Docente 12", "Docente 15", "Docente 16", "Docente 18", "Docente 19", "Docente 20", "Docente 27"], "desc": "Habilidade de redigir instruções claras e contextuais. O sucesso nesta área está ligado à melhoria na expressão escrita e no raciocínio lógico."}, {"label": "Colaboração e Trabalho em Equipe", "n": 10, "quem": ["Docente 07", "Docente 12", "Docente 13", "Docente 15", "Docente 18", "Docente 19", "Docente 21", "Docente 22", "Docente 24", "Docente 25"], "desc": "Habilidade de trabalhar em grupos humanos mediadores, tratando a IA como um \"parceiro de equipe\" ou interlocutor, mantendo o diálogo social."}, {"label": "Consciência Ética e Social", "n": 10, "quem": ["Docente 03", "Docente 04", "Docente 05", "Docente 07", "Docente 12", "Docente 14", "Docente 17", "Docente 18", "Docente 22", "Docente 27"], "desc": "Entendimento do impacto da IA na sociedade, proteção da privacidade de dados e responsabilidade pelo uso justo da tecnologia."}, {"label": "Criatividade Original", "n": 10, "quem": ["Docente 02", "Docente 04", "Docente 10", "Docente 11", "Docente 12", "Docente 17", "Docente 18", "Docente 20", "Docente 25", "Docente 26"], "desc": "Capacidade de usar a IA para brainstorming e prototipagem sem permitir que a ferramenta substitua o esforço criativo humano."}, {"label": "Alfabetização de Dados", "n": 9, "quem": ["Docente 04", "Docente 08", "Docente 09", "Docente 10", "Docente 11", "Docente 12", "Docente 14", "Docente 17", "Docente 18"], "desc": "Compreender como a IA utiliza dados e como a qualidade dos dados de treinamento influencia os resultados finais."}], "Professores": [{"label": "Avaliação Crítica de Conteúdo", "n": 18, "quem": ["Docente 01", "Docente 04", "Docente 05", "Docente 07", "Docente 08", "Docente 09", "Docente 10", "Docente 12", "Docente 13", "Docente 15", "Docente 17", "Docente 19", "Docente 20", "Docente 22", "Docente 23", "Docente 24", "Docente 25", "Docente 26"], "desc": "Habilidade para identificar \"alucinações\" (fatos fabricados) e validar a veracidade, precisão e relevância das respostas da IA."}, {"label": "Pensamento Crítico", "n": 13, "quem": ["Docente 01", "Docente 03", "Docente 05", "Docente 07", "Docente 10", "Docente 11", "Docente 12", "Docente 14", "Docente 15", "Docente 17", "Docente 20", "Docente 25", "Docente 27"], "desc": "Engajar-se em ciclos de questionamento, interpretação e verificação rigorosa de recomendações baseadas em dados."}, {"label": "Alfabetização em IA", "n": 12, "quem": ["Docente 01", "Docente 09", "Docente 12", "Docente 14", "Docente 15", "Docente 17", "Docente 20", "Docente 22", "Docente 23", "Docente 24", "Docente 25", "Docente 26"], "desc": "A alfabetização em IA e imagem (ou letramento em IA) é a competência que permite compreender, interagir criticamente e criar conteúdos usando Inteligência Artificial. Envolve dominar a elaboração de comandos (prompts) e desenvolver o pensamento crítico para evitar vieses, desinformação e entender os limites éticos das tecnologias generativa"}, {"label": "Ensino e Avaliação com IA", "n": 12, "quem": ["Docente 02", "Docente 03", "Docente 05", "Docente 11", "Docente 12", "Docente 13", "Docente 16", "Docente 19", "Docente 22", "Docente 24", "Docente 25", "Docente 27"], "desc": "Redesenhar currículos focando em pensamento de ordem superior e usar a IA para feedback personalizado, mantendo a base das habilidades tradicionais."}, {"label": "Evitar o \"Efeito Carimbador\"", "n": 10, "quem": ["Docente 01", "Docente 08", "Docente 09", "Docente 12", "Docente 14", "Docente 15", "Docente 20", "Docente 21", "Docente 24", "Docente 25"], "desc": "Resistir à tendência de confiar excessivamente na máquina ou aceitar cegamente a primeira sugestão, prevenindo o declínio de habilidades de pesquisa."}, {"label": "Raciocínio Ético", "n": 10, "quem": ["Docente 03", "Docente 04", "Docente 05", "Docente 07", "Docente 09", "Docente 12", "Docente 14", "Docente 23", "Docente 25", "Docente 27"], "desc": "Reconhecer e enfrentar dilemas como injustiça algorítmica e o impacto ambiental do treinamento de modelos."}, {"label": "Engenharia de Prompt", "n": 9, "quem": ["Docente 04", "Docente 08", "Docente 10", "Docente 11", "Docente 12", "Docente 15", "Docente 20", "Docente 22", "Docente 27"], "desc": "Engenharia de prompt é a prática de planejar, criar e refinar instruções em linguagem natural para guiar sistemas de Inteligência Artificial. O objetivo é estruturar comandos claros e contextuais para obter resultados mais precisos, evitando ambiguidades e extraindo o potencial máximo dos grandes modelos de linguagem (LLMs)"}, {"label": "Agência Humana e Supervisão", "n": 8, "quem": ["Docente 06", "Docente 07", "Docente 12", "Docente 13", "Docente 15", "Docente 20", "Docente 21", "Docente 25"], "desc": "Manter o princípio de sempre centralizar os educadores (ACE), garantindo que humanos mantenham a responsabilidade final e o poder de sobrescrever a IA."}, {"label": "Alfabetização de Dados", "n": 8, "quem": ["Docente 02", "Docente 03", "Docente 04", "Docente 05", "Docente 11", "Docente 12", "Docente 14", "Docente 20"], "desc": "Entender como a qualidade dos dados afeta a confiabilidade da IA, estar ciente dos riscos de privacidade e reconhecer vieses que levam à discriminação algorítmica."}, {"label": "Apoio à Neurodiversidade", "n": 8, "quem": ["Docente 02", "Docente 05", "Docente 06", "Docente 11", "Docente 12", "Docente 16", "Docente 18", "Docente 22"], "desc": "Usar capacidades adaptativas da IA para acessibilidade e progressões diversas via Desenho Universal para a Aprendizagem (UDL)."}, {"label": "Propriedade Intelectual e Autoria", "n": 8, "quem": ["Docente 03", "Docente 06", "Docente 07", "Docente 12", "Docente 13", "Docente 15", "Docente 18", "Docente 22"], "desc": "Compreender as fronteiras legais e éticas da autoria e integridade acadêmica em trabalhos assistidos por máquina."}, {"label": "Mentalidade Centrada no Humano", "n": 7, "quem": ["Docente 06", "Docente 12", "Docente 15", "Docente 17", "Docente 18", "Docente 19", "Docente 26"], "desc": "Priorizar o bem-estar e a equidade, garantindo que a IA promova inclusão em vez de aprofundar a brecha digital."}, {"label": "Criatividade com Propósito", "n": 6, "quem": ["Docente 12", "Docente 15", "Docente 17", "Docente 19", "Docente 20", "Docente 26"], "desc": "Usar a IA para brainstorming e prototipagem rápida sem substituir o esforço humano original necessário para inovação."}, {"label": "Curiosidade e Indagação", "n": 6, "quem": ["Docente 01", "Docente 05", "Docente 07", "Docente 12", "Docente 15", "Docente 25"], "desc": "Formular \"perguntas guia\" que disparem investigações profundas e o diálogo em vez de buscar respostas prontas."}, {"label": "Inspecionabilidade e Explicabilidade", "n": 4, "quem": ["Docente 07", "Docente 12", "Docente 14", "Docente 15"], "desc": "Capacidade técnica de inspecionar por que um modelo de IA fez determinada recomendação, assegurando transparência instrucional."}]}, "espontaneas": {"n": 27, "Estudantes": [{"label": "Pensamento Crítico", "n": 11, "quem": ["Docente 01", "Docente 02", "Docente 07", "Docente 09", "Docente 11", "Docente 13", "Docente 15", "Docente 16", "Docente 18", "Docente 25", "Docente 26"], "desc": "Capacidade de analisar informações, questionar suposições e verificar a veracidade e os vieses dos resultados gerados pela IA."}, {"label": "Alfabetização em IA", "n": 10, "quem": ["Docente 01", "Docente 02", "Docente 06", "Docente 08", "Docente 09", "Docente 11", "Docente 14", "Docente 20", "Docente 23", "Docente 25"], "desc": "Compreensão básica de como os modelos funcionam, suas limitações técnicas e o reconhecimento de \"alucinações\"."}, {"label": "Engenharia de Prompt", "n": 9, "quem": ["Docente 03", "Docente 09", "Docente 11", "Docente 13", "Docente 15", "Docente 18", "Docente 22", "Docente 25", "Docente 26"], "desc": "Habilidade de redigir instruções claras e contextuais. O sucesso nesta área está ligado à melhoria na expressão escrita e no raciocínio lógico."}, {"label": "Curiosidade e Indagação", "n": 7, "quem": ["Docente 01", "Docente 05", "Docente 08", "Docente 14", "Docente 15", "Docente 25", "Docente 26"], "desc": "Habilidade de formular perguntas profundas e genuínas que guiam a investigação, evitando aceitar a primeira resposta da máquina."}, {"label": "Interpretação de Texto", "n": 6, "quem": ["Docente 02", "Docente 11", "Docente 18", "Docente 20", "Docente 25", "Docente 26"], "desc": "Reading Literacy — OECD PISA 2018 Reading Literacy Framework, p. 9: \"Reading literacy is understanding, using, evaluating, reflecting on and engaging with texts in order to achieve one's goals, to develop one's knowledge and potential and to participate in society\""}, {"label": "Saber escrever", "n": 5, "quem": ["Docente 07", "Docente 09", "Docente 14", "Docente 25", "Docente 26"], "desc": null}, {"label": "Conhecimento de mundo", "n": 4, "quem": ["Docente 03", "Docente 09", "Docente 11", "Docente 14"], "desc": "Global Competence — OECD PISA Global Competence Handbook (2018), p. 3: \"Global competence is a multidimensional capacity. Globally competent individuals can examine local, global and intercultural issues, understand and appreciate different perspectives and world views, interact successfully and respectfully\""}, {"label": "Conhecimento em Bancos de Dados, Redes e Algoritmos", "n": 4, "quem": ["Docente 10", "Docente 12", "Docente 23", "Docente 25"], "desc": "Knowledge Areas de CC (Data Management, Networking, Algorithmic Foundations) — CS2023 ACM/IEEE/AAAI Computing Curricula (2023), p. 29: \"The CS2023 knowledge model consists of 17 knowledge areas, listed in alphabetical order of their abbreviation: Algorithmic Foundations (AL); Data Management (DM); Networking and Communication (NC)\""}, {"label": "Engenharia de Software", "n": 2, "quem": ["Docente 14", "Docente 19"], "desc": "Software Engineering — Guide to SWEBOK v4 (IEEE CS, 2024), p. 38: \"software engineering is defined as \"the application of a systematic, disciplined, quantifiable approach to the development, operation, and maintenance of software; that is, the application of engineering to software\"\""}, {"label": "Mais leitura", "n": 1, "quem": ["Docente 07"], "desc": null}, {"label": "Pensamento Computacional", "n": 1, "quem": ["Docente 18"], "desc": "Computational Thinking — Wing (2006), Computational Thinking, CACM 49(3), p. 33 (PDF p.1): \"Computational thinking involves solving problems, designing systems, and understanding human behavior, by drawing on the concepts fundamental to computer science\""}, {"label": "Tomada de Decisão", "n": 1, "quem": ["Docente 14"], "desc": "Decision-making — P21 Framework, Battelle for Kids (2019), p. 4: \"Make judgments and decisions - Effectively analyze and evaluate evidence, arguments, claims, and beliefs\""}], "Professores": [{"label": "Agência Humana e Supervisão", "n": 8, "quem": ["Docente 01", "Docente 07", "Docente 09", "Docente 14", "Docente 17", "Docente 23", "Docente 25", "Docente 26"], "desc": "Manter o princípio de sempre centralizar os educadores (ACE), garantindo que humanos mantenham a responsabilidade final e o poder de sobrescrever a IA."}, {"label": "Empatia", "n": 6, "quem": ["Docente 05", "Docente 14", "Docente 18", "Docente 24", "Docente 25", "Docente 27"], "desc": "Empathy (Dialogue skills) — A scoping review of Future Skills frameworks, p. 12: \"Dialogue skills. Collaboration. Communication. Empathy. Listening\""}, {"label": "Alfabetização em IA", "n": 5, "quem": ["Docente 13", "Docente 14", "Docente 15", "Docente 17", "Docente 22"], "desc": "A alfabetização em IA e imagem (ou letramento em IA) é a competência que permite compreender, interagir criticamente e criar conteúdos usando Inteligência Artificial. Envolve dominar a elaboração de comandos (prompts) e desenvolver o pensamento crítico para evitar vieses, desinformação e entender os limites éticos das tecnologias generativa"}, {"label": "Comunicação", "n": 5, "quem": ["Docente 07", "Docente 23", "Docente 25", "Docente 26", "Docente 27"], "desc": "Communication (4Cs) — P21 Framework, Battelle for Kids (2019), p. 4: \"A focus on creativity, critical thinking, communication, and collaboration is essential to prepare students for the future\""}, {"label": "Conhecimento de mundo", "n": 5, "quem": ["Docente 03", "Docente 11", "Docente 15", "Docente 23", "Docente 25"], "desc": "Global Competence — OECD PISA Global Competence Handbook (2018), p. 3: \"Global competence is a multidimensional capacity. Globally competent individuals can examine local, global and intercultural issues, understand and appreciate different perspectives and world views, interact successfully and respectfully\""}, {"label": "Engenharia de Prompt", "n": 5, "quem": ["Docente 01", "Docente 03", "Docente 04", "Docente 18", "Docente 22"], "desc": "Engenharia de prompt é a prática de planejar, criar e refinar instruções em linguagem natural para guiar sistemas de Inteligência Artificial. O objetivo é estruturar comandos claros e contextuais para obter resultados mais precisos, evitando ambiguidades e extraindo o potencial máximo dos grandes modelos de linguagem (LLMs)"}, {"label": "Pensamento Crítico", "n": 5, "quem": ["Docente 06", "Docente 15", "Docente 23", "Docente 24", "Docente 25"], "desc": "Engajar-se em ciclos de questionamento, interpretação e verificação rigorosa de recomendações baseadas em dados."}, {"label": "Apoio à Neurodiversidade", "n": 3, "quem": ["Docente 15", "Docente 17", "Docente 18"], "desc": "Usar capacidades adaptativas da IA para acessibilidade e progressões diversas via Desenho Universal para a Aprendizagem (UDL)."}, {"label": "Avaliação Crítica de Conteúdo", "n": 3, "quem": ["Docente 01", "Docente 06", "Docente 17"], "desc": "Habilidade para identificar \"alucinações\" (fatos fabricados) e validar a veracidade, precisão e relevância das respostas da IA."}, {"label": "Competência Digital", "n": 2, "quem": ["Docente 02", "Docente 27"], "desc": "Digital Competence — Vuorikari, Kluzer & Punie, DigComp 2.2 (2022), p. 8: \"It includes information and data literacy, communication and collaboration, media literacy, digital content creation, safety, problem solving\""}, {"label": "Engenharia de Software", "n": 2, "quem": ["Docente 04", "Docente 19"], "desc": "Software Engineering — Guide to SWEBOK v4 (IEEE CS, 2024), p. 38: \"software engineering is defined as \"the application of a systematic, disciplined, quantifiable approach to the development, operation, and maintenance of software; that is, the application of engineering to software\"\""}, {"label": "Escrita", "n": 2, "quem": ["Docente 19", "Docente 25"], "desc": null}, {"label": "Metodo Cientifico", "n": 1, "quem": ["Docente 19"], "desc": "Scientific Literacy — OECD PISA 2015 Science Framework, p. 7: \"Scientific Literacy is the ability to engage with science-related issues, and with the ideas of science, as a reflective citizen\""}]}, "referencias": {"Professores": {"Alfabetização de Dados": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Assessing how accurately large language models encode...\"", "Avaliação Crítica de Conteúdo": "\"Capability-based training framework for generative AI...\"; \"Grounded Copilot: How Programmers Interact...\"", "Agência Humana e Supervisão": "\"AI analysis reveals top predictors...\"; \"Artificial Intelligence and the Future of Teaching and Learning\"", "Evitar o \"Efeito Carimbador\"": "\"Assessing how accurately large language models encode...\"; \"Grounded Copilot\"", "Raciocínio Ético": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Educar más allá de la IA\"", "Propriedade Intelectual e Autoria": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Grounded Copilot\"", "Mentalidade Centrada no Humano": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Capability-based training framework...\"", "Ensino e Avaliação com IA": "\"AI analysis reveals top predictors...\"; \"Large language models for qualitative research...\"", "Inspecionabilidade e Explicabilidade": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Educar más allá de la IA\"; \"Uso de IA para desarrollo de habilidades blandas\"", "Apoio à Neurodiversidade": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Assessing how accurately...\"; \"Capability-based training framework...\"", "Curiosidade e Indagação": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Guidelines for Human-AI Interaction\"", "Pensamento Crítico": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Artificial intelligence in learning and development...\"", "Criatividade com Propósito": "\"Educar más allá de la IA: Curiosidad, Pensamiento Crítico y Creatividad en Ecuador\"", "Engenharia de Prompt": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\"."}, "Alunos": {"Pensamento Crítico": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\"; \"Uso de IA para desarrollo de habilidades blandas\".", "Alfabetização em IA (AI Literacy)": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\".", "Curiosidade e Indagação": "\"Educar más allá de la IA: Curiosidad, Pensamiento Crítico y Creatividad en Ecuador\".", "Engenharia de Prompt": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\".", "Creatividade Original": "\"Capability-based training framework for generative AI\"; \"Educar más allá de la IA\"; \"The Impact of Generative AI on Creativity\".", "Consciência Ética e Social": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\".", "Colaboração e Trabalho em Equipe": "\"Educar más allá de la IA\"; \"Machines as teammates\"; \"The challenges of AI in higher education\".", "Autorregulação e Metacognição": "\"Artificial Intelligence and the Future of Teaching and Learning\"; \"Is ChatGPT helpful for graduate students\".", "Alfabetização de Dados": "\"Capability-based training framework for generative AI\"; \"The challenges of AI in higher education\"."}}, "participantes": [{"id": "P01", "nome": "Docente 01", "inst": ["Cesar School"], "est": 8, "esp": 6}, {"id": "P02", "nome": "Docente 02", "inst": ["Unicap"], "est": 5, "esp": 4}, {"id": "P03", "nome": "Docente 03", "inst": ["Uninassau"], "est": 8, "esp": 4}, {"id": "P04", "nome": "Docente 04", "inst": ["Embarque Digital"], "est": 9, "esp": 2}, {"id": "P05", "nome": "Docente 05", "inst": ["CAC"], "est": 10, "esp": 2}, {"id": "P06", "nome": "Docente 06", "inst": ["UNCISAL"], "est": 8, "esp": 3}, {"id": "P07", "nome": "Docente 07", "inst": ["CIN"], "est": 10, "esp": 5}, {"id": "P08", "nome": "Docente 08", "inst": ["Cesar School"], "est": 6, "esp": 2}, {"id": "P09", "nome": "Docente 09", "inst": ["Cesar School"], "est": 8, "esp": 6}, {"id": "P10", "nome": "Docente 10", "inst": ["Venturus / PUC - Campinas"], "est": 10, "esp": 1}, {"id": "P11", "nome": "Docente 11", "inst": ["Embarque Digital"], "est": 9, "esp": 6}, {"id": "P12", "nome": "Docente 12", "inst": ["UNIC / UABE"], "est": 24, "esp": 1}, {"id": "P13", "nome": "Docente 13", "inst": ["Cesar School"], "est": 8, "esp": 3}, {"id": "P14", "nome": "Docente 14", "inst": ["UFPE"], "est": 12, "esp": 9}, {"id": "P15", "nome": "Docente 15", "inst": ["UFRPE"], "est": 16, "esp": 7}, {"id": "P16", "nome": "Docente 16", "inst": ["Unicap"], "est": 5, "esp": 1}, {"id": "P17", "nome": "Docente 17", "inst": ["Cesar School"], "est": 8, "esp": 4}, {"id": "P18", "nome": "Docente 18", "inst": ["Cesar School"], "est": 12, "esp": 7}, {"id": "P19", "nome": "Docente 19", "inst": ["UFAL"], "est": 8, "esp": 4}, {"id": "P20", "nome": "Docente 20", "inst": ["Embarque Digital"], "est": 12, "esp": 2}, {"id": "P21", "nome": "Docente 21", "inst": ["Cesar School"], "est": 5, "esp": 0}, {"id": "P22", "nome": "Docente 22", "inst": ["Cesar School"], "est": 10, "esp": 3}, {"id": "P23", "nome": "Docente 23", "inst": ["UFRPE"], "est": 5, "esp": 6}, {"id": "P24", "nome": "Docente 24", "inst": ["UFRPE"], "est": 6, "esp": 2}, {"id": "P25", "nome": "Docente 25", "inst": ["IFPE"], "est": 13, "esp": 13}, {"id": "P26", "nome": "Docente 26", "inst": ["UFRS"], "est": 8, "esp": 7}, {"id": "P27", "nome": "Docente 27", "inst": ["UFPE"], "est": 8, "esp": 3}]};
+
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function bars(el, items, n, cls){
+  const max = Math.max(...items.map(i => i.n), 1);
+  el.className = cls;
+  el.innerHTML = items.map(i => {
+    const pct = (i.n / max * 100).toFixed(1);
+    const share = (i.n / n * 100).toFixed(0);
+    return `<div class="bar" title="${esc(i.desc || i.label)}">
+      <div class="lbl">${esc(i.label)}</div>
+      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+      <div class="val">${i.n}/${n} \u00b7 ${share}%</div>
+    </div>
+    <div class="who">${esc(i.quem.join(' \u00b7 '))}</div>`;
+  }).join('');
+}
+
+function tbl(el, items, n){
+  el.innerHTML = '<table class="dp"><thead><tr><th>Habilidade</th><th>n</th>'
+    + '<th>Quem mencionou</th></tr></thead><tbody>'
+    + items.map(i => `<tr><td>${esc(i.label)}</td><td class="n">${i.n}/${n}</td>`
+      + `<td>${esc(i.quem.join(', '))}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+
+for (const [key, blocks] of Object.entries({estimuladas: D.estimuladas,
+                                            espontaneas: D.espontaneas})){
+  for (const blk of ['Estudantes','Professores']){
+    bars(document.getElementById(`bar-${key}-${blk}`), blocks[blk], blocks.n,
+         blk === 'Estudantes' ? 'est' : 'prof');
+    tbl(document.getElementById(`tab-${key}-${blk}`), blocks[blk], blocks.n);
+  }
+}
+
+const marcas = v => v ? `<span class="yes">${v}</span>` : '<span class="no">0</span>';
+document.getElementById('pt').innerHTML =
+  '<table class="dp"><thead><tr><th>ID</th><th>Participante</th><th>Instituição</th>'
+  + '<th>Estimuladas</th><th>Espontâneas</th></tr></thead><tbody>'
+  + D.participantes.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.nome)}</td>`
+      + `<td>${p.inst.length ? p.inst.map(i => `<span class="inst">${esc(i)}</span>`).join('')
+                             : '<span class="no">—</span>'}</td>`
+      + `<td class="n">${marcas(p.est)}</td>`
+      + `<td class="n">${marcas(p.esp)}</td>`
+      + `</tr>`).join('')
+  + '</tbody></table>';
+
+const R = D.referencias;
+document.getElementById('refs').innerHTML =
+  '<table class="dp"><thead><tr><th>Bloco</th><th>Habilidade</th>'
+  + '<th>Fonte registrada</th></tr></thead><tbody>'
+  + [['Professores', R.Professores], ['Alunos', R.Alunos]].flatMap(([b, m]) =>
+      Object.entries(m).map(([k, v]) =>
+        `<tr><td>${esc(b)}</td><td>${esc(k)}</td><td>${esc(v)}</td></tr>`)).join('')
+  + '</tbody></table>';
+
+// contadores das abas
+const cnt = {
+  est: D.estimuladas.Estudantes.length + D.estimuladas.Professores.length,
+  esp: D.espontaneas.Estudantes.length + D.espontaneas.Professores.length,
+  cov: D.participantes.length,
+  ref: Object.keys(R.Professores).length + Object.keys(R.Alunos).length,
+};
+for (const [k, v] of Object.entries(cnt)){
+  const b = document.querySelector(`.tab[data-t="${k}"] .b`);
+  if (b) b.textContent = v;
+}
+
+// abas
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('section[id^=s-]').forEach(s => s.classList.add('hide'));
+  document.getElementById('s-' + t.dataset.t).classList.remove('hide');
+}));
+
+// nomes nas barras
+document.getElementById('tw').addEventListener('click', e => {
+  document.body.classList.toggle('showwho');
+  const on = document.body.classList.contains('showwho');
+  e.currentTarget.classList.toggle('on', on);
+  e.currentTarget.textContent = on ? 'Ocultar nomes nas barras'
+                                   : 'Mostrar nomes nas barras';
+});
+
+</script>
+<!--<<evolucao--><script>
+(function(){
+  function esc(s){return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function br(iso){if(!iso||iso.length<10)return iso||'';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+  window.DATAS_EVO={};
+  // usada pela costura no titulo(p): mostra a data no cabecalho do professor
+  window.evoData=function(nome){var d=window.DATAS_EVO[nome];return d?' · <span class="rp-data" title="data da entrevista">'+esc(br(d))+'</span>':'';};
+  function card(cls,n,lbl){return '<div class="evo-card '+cls+'"><span class="n">'+n+'</span><small>'+lbl+'</small></div>';}
+  function render(d){
+    window.DATAS_EVO=d.datas||{};
+    var m=d.matriz||{};
+    var maxTot=Math.max.apply(null,(d.crescimento||[{total:1}]).map(function(c){return c.total;}));
+    var cresc='<div class="panel"><h2>Crescimento do set de perguntas</h2>'
+      +'<p class="expl">De '+((d.crescimento[0]||{}).total||0)+' na primeira entrevista a '+d.n_perguntas+' perguntas distintas. Cada data mostra quantas perguntas apareceram pela primeira vez ali.</p>'
+      +'<table><thead><tr><th>Data</th><th class="num">Novas</th><th class="num">Total</th><th>Acumulado</th><th>Professores</th></tr></thead><tbody>'
+      +(d.crescimento||[]).map(function(c){return '<tr><td>'+esc(br(c.data))+'</td><td class="num">'+(c.novas?'+'+c.novas:'')+'</td><td class="num">'+c.total+'</td>'
+        +'<td><div class="bar"><span style="width:'+Math.round(100*c.total/maxTot)+'%"></span></div></td>'
+        +'<td>'+esc((c.professores||[]).join(', '))+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+    var recl='<div class="panel"><h2>As células vazias, separadas</h2>'
+      +'<p class="expl">Matriz de '+d.n_professores_com_data+' professores × '+d.n_perguntas+' perguntas. O que antes parecia "sem resposta" agora se divide:</p>'
+      +'<div class="evo-cards">'
+      +card('resp',m.respondida||0,'respondida')
+      +card('branco',m.em_branco||0,'em branco (perguntada)')
+      +card('naoex',m.nao_existia||0,'ainda não existia')
+      +card('naofeita',m.nao_feita||0,'existia, não foi perguntada')
+      +'</div></div>';
+    var pp='<div class="panel"><h2>Por professor</h2>'
+      +'<table><thead><tr><th>Data</th><th>Professor</th><th class="num" title="perguntas que já existiam na data">existiam</th><th class="num">respondida</th><th class="num">em branco</th><th class="num">não existia</th><th class="num">não feita</th></tr></thead><tbody>'
+      +(d.por_professor||[]).map(function(p){return '<tr><td>'+esc(br(p.data))+'</td><td>'+esc(p.professor)+'</td><td class="num">'+p.existiam_na_data+'</td><td class="num">'+p.respondida+'</td><td class="num">'+p.em_branco+'</td><td class="num">'+p.nao_existia+'</td><td class="num">'+p.nao_feita+'</td></tr>';}).join('')
+      +'</tbody></table>'
+      +(d.professores_sem_data&&d.professores_sem_data.length?'<p class="expl">Sem data conhecida (fora da linha do tempo): '+esc(d.professores_sem_data.join(', '))+'.</p>':'')
+      +'</div>';
+    var pergs='<div class="panel"><h2>Primeira aparição de cada pergunta ('+d.n_perguntas+')</h2>'
+      +'<table><thead><tr><th>1ª data</th><th>Categoria</th><th>Pergunta</th><th class="num">perguntada</th><th class="num">respondida</th><th class="num">em branco</th></tr></thead><tbody>'
+      +(d.perguntas||[]).map(function(q){return '<tr><td>'+esc(br(q.primeira_data))+'</td><td>'+esc(q.categoria)+'</td><td>'+esc(q.pergunta)+'</td><td class="num">'+q.n_perguntada+'</td><td class="num">'+q.n_respondida+'</td><td class="num">'+q.n_em_branco+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+    document.getElementById('evo-corpo').innerHTML=recl+cresc+pp+pergs;
+    var st=document.getElementById('evo-st'); if(st)st.remove();
+    // re-pinta as datas nos cabecalhos de respostas ja renderizados (sem esperar re-render)
+    document.querySelectorAll('#s-ent .rp-cab h3').forEach(function(h){
+      if(h.querySelector('.rp-data'))return;
+      var txt=h.textContent||''; var nome=(txt.split(' - ')[0]||'').trim();
+      var d2=window.DATAS_EVO[nome]; if(d2)h.insertAdjacentHTML('beforeend',' · <span class="rp-data" title="data da entrevista">'+esc(br(d2))+'</span>');
+    });
+  }
+  function carrega(){
+    fetch('/api/evolucao-perguntas',{headers:{Accept:'application/json'}})
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+      .then(render)
+      .catch(function(e){var st=document.getElementById('evo-st');if(st){st.textContent='indisponível (suba o painel pelo serve.py): '+e.message;st.className='st erro';}});
+  }
+  if(document.readyState!=='loading')carrega(); else document.addEventListener('DOMContentLoaded',carrega);
+})();
+</script><!--evolucao>>--></body></html>
