@@ -7,8 +7,11 @@ Profissional em Engenharia de Software (CESAR School).
 
 | Painel | O que é |
 |---|---|
-| [Referencial teórico](referencial/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
-| [Habilidades nas entrevistas](habilidades/) | O que 27 docentes apontaram, com nomes substituídos por `Docente NN` |
+| [Referencial Teórico](referencial/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
+| [Artigos × Bases](referencial/matriz-artigos-bases.html) | Em que bases cada artigo está, quanto é citado e se continua sendo citado; relevância do tema por base |
+| [Entrevistas](habilidades/) | O que 27 docentes apontaram, com nomes substituídos por `Docente NN` |
+
+As páginas funcionam no celular.
 
 ## O que estas páginas não são
 
@@ -23,8 +26,9 @@ clique e não guarda é pior que botão ausente.
 
 ## Privacidade
 
-Os participantes aparecem como `Docente 01`..`Docente 27`. A aba de respostas
-verbatim não faz parte desta versão.
+Os participantes aparecem como `Docente 01`..`Docente 27`. Duas abas do painel de
+trabalho não fazem parte desta versão: as respostas verbatim e a evolução das
+perguntas (que é organizada por professor e data de entrevista).
 
 Instituição e área foram mantidas por decisão da pessoa pesquisadora. Vale
 dizer o que isso implica: em uma cidade, o par instituição + área restringe
