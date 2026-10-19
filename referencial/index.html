@@ -357,7 +357,7 @@ h1{font-weight:650;letter-spacing:0}
  <div class="tab" data-t="rel">🔗 Mapa da expansão <span class="b">50</span></div>
  <div class="tab" data-t="nac">🔒 Sem acesso <span class="b">14</span></div>
   <div class="tab" data-t="ins">Insights <span class="b">10</span></div>
- <!--ab1510>>--><div class="tab" data-t="ab">🗂 Artigos × Bases <span class="b">1028</span></div><div class="tab" data-t="tpb">📊 Tema por base <span class="b">18</span></div><!--<<ab1510-->
+ <!--ab1510>>--><div class="tab" data-t="ab">🗂 Artigos × Bases <span class="b">1028</span></div><div class="tab" data-t="tpb">📊 Tema por base <span class="b">21</span></div><!--<<ab1510-->
  
  
 </div>
@@ -380,7 +380,7 @@ h1{font-weight:650;letter-spacing:0}
 <div><div class="k">QR2 · treinamentos existentes</div><div class="v"><span class="chip2 cE">15</span>respondem · <span class="chip2 cD">20</span>diferenciam. Lacunas: avaliação só até Kirkpatrick 1–2, sem follow-up, nada para docentes de TI. <a href="https://claude.ai/artifact/9T3ftTCPcVtPK3yiy81BZ1" target="_blank">Busca QR1/QR2</a></div></div>
 <div><div class="k">Candidatos novos</div><div class="v"><b>56</b> estudos da busca em <code>sugestoes.json</code> (SC-021 a SC-076), <b>pendentes de triagem</b>; ainda não entram nesta tabela. <a href="https://claude.ai/artifact/CWQtbPjqtBKhVZzEwe4tbg" target="_blank">Matriz dos artigos</a></div></div>
 <div><div class="k">Competências × artigos</div><div class="v">155 artigos tocam 2+ das 18 competências (<span class="chip2 cE">E</span>empírica · <span class="chip2 cR">E-rev</span>revisão · <span class="chip2 cD">D</span>definição). <a href="https://claude.ai/artifact/GgmvvMzkXdQ85KbvrHigQe" target="_blank">Artigos × competências</a></div></div>
-<div><div class="k">Artigos × Bases</div><div class="v">1.028 artigos (154 da base + 874 candidatos) × 18 bases, com status, resumo, nº de bases e link do artigo em cada base. Scopus e Web of Science <b>a conferir</b> no Periódicos CAPES. <a href="https://claude.ai/artifact/D1hBB3r5n94eWLc3MoHB6p" target="_blank">página publicada</a> · <a href="matriz-artigos-bases.html">aba local</a> · <code>papers/matriz-artigos-bases.xlsx</code></div></div><div><div class="k">Estrutura</div><div class="v">9 capítulos; Cap. 2 = revisão narrativa; <b>Cap. 4 = revisão da literatura (QR1+QR2)</b>. <a href="https://claude.ai/artifact/7okAxrKaUcMpcXGASPPvDz" target="_blank">Estado da tese</a> · <a href="https://claude.ai/artifact/DogXbupwjQ9Stei2iqJKok" target="_blank">Fontes × estrutura</a></div></div>
+<div><div class="k">Artigos × Bases</div><div class="v">1.028 artigos (154 da base + 874 candidatos) × 21 bases, com status, resumo, nº de bases e link do artigo em cada base. Scopus e Web of Science <b>a conferir</b> no Periódicos CAPES. <a href="https://claude.ai/artifact/D1hBB3r5n94eWLc3MoHB6p" target="_blank">página publicada</a> · <a href="matriz-artigos-bases.html">aba local</a> · <code>papers/matriz-artigos-bases.xlsx</code></div></div><div><div class="k">Estrutura</div><div class="v">9 capítulos; Cap. 2 = revisão narrativa; <b>Cap. 4 = revisão da literatura (QR1+QR2)</b>. <a href="https://claude.ai/artifact/7okAxrKaUcMpcXGASPPvDz" target="_blank">Estado da tese</a> · <a href="https://claude.ai/artifact/DogXbupwjQ9Stei2iqJKok" target="_blank">Fontes × estrutura</a></div></div>
 </div></div><!--<<estado-pesquisa-->
  <div class="panel caphero"><h2>🏠 Visão geral da base</h2><!--p2610>>--><div class="expl" style="margin:6px 0 4px"><b>118 de 154</b> artigos da base são de 2023 em diante, dentro do período da busca. No gráfico por ano, a linha tracejada marca o corte de 2023.</div><!--<<p2610-->  <div class="expl" style="border-left:3px solid var(--r3);padding-left:10px;margin:8px 0"><b>Como ler esta base.</b> Os artigos existentes foram reunidos ao longo do doutorado de forma oportunista — <b>não</b> houve busca protocolada, então esta base não sustenta alegação de cobertura sistemática. Os relacionados do Consensus passaram por triagem artigo a artigo: dos 90 devolvidos, 47 foram mantidos pelo critério de ter sujeito humano e competência ou aprendizagem como unidade de análise; 37 foram excluídos e 6 aguardam conferência de versão mais recente. Os textos completos dos PDFs estão fora do repositório, então a classificação de cada artigo não é auditável por aqui. Instituição, país e tipo de estudo vêm de heurística.</div><div class="expl">Retrato dos <b>154 artigos</b> da tese num relance: quando foram publicados, os temas, os autores mais recorrentes, as palavras-chave dominantes nos títulos, os países e os tipos de estudo. Use as outras abas para explorar em detalhe ou a aba <b>Tabela</b> para filtrar tudo.</div></div>
  <div class="grid2">
@@ -1755,8 +1755,23 @@ renderTBL();renderEX();renderSEL();renderREL();renderINS();renderEDU();renderSKL
     sel:candidatos,
     rel:function(){return typeof DATA!=='undefined'&&DATA.rel?DATA.rel.length:null;},
     nac:function(){return linhas('#v-nac tbody tr');},
-    ins:function(){return typeof DATA!=='undefined'&&DATA.ins?DATA.ins.length:null;}
+    ins:function(){return typeof DATA!=='undefined'&&DATA.ins?DATA.ins.length:null;},
+    ab:function(){const m=matriz();return m?m.D.length:INICIAL.ab;},
+    tpb:function(){const m=matriz();return m?m.C.length:INICIAL.tpb;}
   };
+  // Abas Artigos × Bases e Tema por base (18/10/2026): o número vem da própria matriz
+  // carregada no iframe (mesma origem, local e no Pages). D e C são `const` de topo lá,
+  // fora de `window`, por isso o eval do iframe.
+  const INICIAL={"ab": 1028, "tpb": 21, "kpi": 861};
+  function matriz(){
+    const fs=document.querySelectorAll('iframe[src*="matriz-artigos-bases"]');
+    for(const f of fs){
+      try{const w=f.contentWindow;const r=w&&w.eval('typeof D!=="undefined"&&typeof C!=="undefined"?{D:D,C:C}:null');if(r)return r;
+        if(f.dataset.carregou)console.error('contadores: o iframe da matriz carregou, mas sem os dados D/C (caminho ou página errados?)',f.src);}
+      catch(e){if(f.dataset.carregou)console.error('contadores: matriz do iframe inacessível; mantido o valor gravado',f.src,e);}
+    }
+    return null;
+  }
   function poe(el,v){if(el&&v!=null&&el.textContent!==String(v))el.textContent=String(v);}
   function atualiza(){
     for(const t in CONTA){
@@ -1764,6 +1779,15 @@ renderTBL();renderEX();renderSEL();renderREL();renderINS();renderEDU();renderSKL
       poe(document.querySelector('.tab[data-t="'+t+'"] .b'),v);
     }
     // "Os demais N artigos têm o PDF": base de origem menos os sem acesso.
+    // Cartão "Candidatos a triar (rodadas 2 a 4)": candidatos dessas rodadas sem decisão.
+    // Valor inicial gravado do CSV da matriz; confirmado pela matriz do iframe quando carrega
+    // (os iframes têm loading="lazy" e só carregam ao abrir a aba).
+    const m=matriz();
+    // Estudos ÚNICOS (o texto do painel diz "861 únicos"): o mesmo estudo pode vir em duas
+    // linhas com DOIs diferentes (pré-print e periódico, ex. C139/C693). Chave: título
+    // normalizado, 80 caracteres — a mesma do Python (iniciais).
+    const n=m?new Set(m.D.filter(function(r){return r.g==='Candidato (triagem)'&&/^rodada [234]\b/.test(r.o||'')&&r.s!=='incluído'&&r.s!=='não incluído';}).map(function(r){return String(r.t||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,80);})).size:INICIAL.kpi;
+    document.querySelectorAll('.kpi').forEach(function(k){const t=k.querySelector('.t');if(t&&/^Candidatos a triar/.test(t.textContent))poe(k.querySelector('.n'),n);});
     const nac=document.getElementById('v-nac');
     if(nac&&typeof ALL!=='undefined'){
       const base=ALL.filter(function(r){return !r._bexp;}).length;
@@ -1784,6 +1808,7 @@ renderTBL();renderEX();renderSEL();renderREL();renderINS();renderEDU();renderSKL
   function agenda(){if(pend)return;pend=setTimeout(function(){pend=null;atualiza();},60);}
   function liga(){
     mostraCandidatos();atualiza();
+    document.querySelectorAll('iframe').forEach(function(f){f.addEventListener('load',function(){f.dataset.carregou='1';agenda();});});
     new MutationObserver(agenda).observe(document.body,{childList:true,subtree:true,characterData:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',liga);else liga();
