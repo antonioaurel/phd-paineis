@@ -13,6 +13,7 @@ mais citadas nas entrevistas, artigos por base).
 |---|---|
 | [Referencial Teórico](referencial-teorico/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
 | [Artigos × Bases](artigos-x-bases/) | Em que bases cada artigo está, quanto é citado e se continua sendo citado; relevância do tema por base |
+| [Snowballing](snowballing/) | A partir de um artigo: o que ele cita e quem o cita, dentro do corpus |
 | [Entrevistas](entrevistas/) | O que 27 docentes apontaram, com nomes substituídos por `Docente NN` |
 
 As páginas funcionam no celular. Os endereços antigos (`referencial/`, `habilidades/`)
