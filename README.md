@@ -5,6 +5,10 @@ Profissional em Engenharia de Software (CESAR School).
 
 👉 **https://antonioaurel.github.io/phd-paineis/**
 
+A [página inicial](https://antonioaurel.github.io/phd-paineis/) traz o índice dos painéis, os
+números gerais, o roteiro da tese simplificado e gráficos (andamento dos capítulos, competências
+mais citadas nas entrevistas, artigos por base).
+
 | Painel | O que é |
 |---|---|
 | [Referencial Teórico](referencial/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
@@ -28,7 +32,8 @@ clique e não guarda é pior que botão ausente.
 
 Os participantes aparecem como `Docente 01`..`Docente 27`. Duas abas do painel de
 trabalho não fazem parte desta versão: as respostas verbatim e a evolução das
-perguntas (que é organizada por professor e data de entrevista).
+perguntas por professor. A evolução aparece só agregada: perguntas do roteiro com
+categoria, por mês, sem a lista por professor.
 
 Instituição e área foram mantidas por decisão da pessoa pesquisadora. Vale
 dizer o que isso implica: em uma cidade, o par instituição + área restringe
