@@ -11,11 +11,12 @@ mais citadas nas entrevistas, artigos por base).
 
 | Painel | O que é |
 |---|---|
-| [Referencial Teórico](referencial/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
-| [Artigos × Bases](referencial/matriz-artigos-bases.html) | Em que bases cada artigo está, quanto é citado e se continua sendo citado; relevância do tema por base |
-| [Entrevistas](habilidades/) | O que 27 docentes apontaram, com nomes substituídos por `Docente NN` |
+| [Referencial Teórico](referencial-teorico/) | Os artigos da base, com temas, eixos, procedência e a triagem de leitura |
+| [Artigos × Bases](artigos-x-bases/) | Em que bases cada artigo está, quanto é citado e se continua sendo citado; relevância do tema por base |
+| [Entrevistas](entrevistas/) | O que 27 docentes apontaram, com nomes substituídos por `Docente NN` |
 
-As páginas funcionam no celular.
+As páginas funcionam no celular. Os endereços antigos (`referencial/`, `habilidades/`)
+redirecionam para os novos.
 
 ## O que estas páginas não são
 
